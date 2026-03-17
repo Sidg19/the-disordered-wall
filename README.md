@@ -11,10 +11,28 @@ Intrinsically disordered regions are biologically important but harder to descri
 
 I was interested in this question because my broader research interests sit at the interface of protein/RNA biology, disorder, and computational modeling. The project also connects to a bigger theme in protein ML: how far structure-based intuition transfers to flexible, disordered biology.
 
-## Data Sources
-### 1. ProteinGym
-I used ProteinGym deep mutational scanning substitution assays as the main source of mutation-effect data. For each assay, I used the reference metadata and the experimental mutation-effect scores.
+## Public dataset links
 
+The raw benchmark files used in this project are public and can be downloaded from the official sources below.
+
+### ProteinGym
+- [ProteinGym download page](https://proteingym.org/download)
+- [ProteinGym official GitHub repository](https://github.com/OATML-Markslab/ProteinGym)
+
+Files used from ProteinGym:
+- `DMS_substitutions.csv`
+- `DMS_ProteinGym_substitutions/`
+- `ProteinGym_AF2_structures/` *(downloaded during setup, but structure-derived features were not part of the final successful analysis)*
+
+### DisProt
+- [DisProt annotated proteins download page](https://disprot.org/download)
+- [DisProt homepage](https://disprot.org/)
+
+Files used from DisProt:
+- `DisProt_release_2025_12.tsv`
+
+### Note
+Raw benchmark data are not committed to this repository to keep the repo lightweight and because the datasets are publicly available from the official sources above.
 ### 2. DisProt
 I used DisProt annotated disorder regions to assign each mutation position to either an IDR or an ordered region.
 
