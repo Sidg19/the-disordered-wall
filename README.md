@@ -37,7 +37,7 @@ Raw benchmark data are not committed to this repository to keep the repo lightwe
 I used DisProt annotated disorder regions to assign each mutation position to either an IDR or an ordered region.
 
 ### 3. Protein Structures / pLDDT
-I downloaded the ProteinGym AlphaFold structure set with the intention of incorporating structure-derived features such as pLDDT. However, structure coverage did not populate successfully in the final benchmark, so the final reported analyses do **not** rely on structure-derived features. I mention this explicitly because it was part of the original route idea, but it was not a successful component of the final analysis.
+I downloaded the ProteinGym AlphaFold structure set with the intention of incorporating structure-derived features such as pLDDT. **However, structure coverage did not populate successfully in the final benchmark, so the final reported analyses do not rely on structure-derived features**. I mention this explicitly because it was part of the original route idea, but it was not a successful component of the final analysis.
 
 ## What Was Used in the Final Analysis
 After filtering and overlap construction, the final benchmark contained:
