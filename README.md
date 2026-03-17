@@ -137,7 +137,7 @@ In the final intersected benchmark:
 - IDR median `DMS_score_z` ≈ 0.274
 - ordered median `DMS_score_z` ≈ 0.181
 
-This indicates that, on average, mutations in IDRs were slightly more tolerated than mutations in ordered regions.
+**This indicates that, on average, mutations in IDRs were slightly more tolerated than mutations in ordered regions.**
 
 ### 2. The pooled IDR-vs-ordered difference is robust to class imbalance
 I performed balanced subsampling because the benchmark contained many more ordered than IDR variants. The result remained positive:
@@ -147,7 +147,7 @@ I performed balanced subsampling because the benchmark contained many more order
 - balanced median difference ≈ 0.0941 ± 0.0084
 - 95% interval for balanced median difference ≈ [0.0831, 0.1108]
 
-So the shift toward more tolerated IDR mutations was not simply caused by having more ordered variants.
+**So the shift toward more tolerated IDR mutations was not simply caused by having more ordered variants.**
 
 ### 3. The protein-level effect is heterogeneous
 Among proteins with both region types represented:
@@ -167,12 +167,12 @@ Approximate mean Spearman values:
 - `mutation_only`: IDR ≈ 0.122, ordered ≈ 0.221
 - `mutation_plus_region`: IDR ≈ 0.110, ordered ≈ 0.227
 
-This supports the idea that mutation effects are harder to rank/predict in IDRs than in ordered protein regions.
+**This supports the idea that mutation effects are harder to rank/predict in IDRs than in ordered protein regions.**
 
 ### 5. A coarse IDR/ordered label alone adds very little
 Adding only the `region_type` label produced very little overall improvement compared with mutation-only features.
 
-This suggests that a coarse “disordered vs ordered” label is too simple to capture the sequence determinants that matter for mutation effects.
+**This suggests that a coarse “disordered vs ordered” label is too simple to capture the sequence determinants that matter for mutation effects.**
 
 ### 6. Bonus extension: local sequence context substantially improves prediction
 I added a third model, `mutation_plus_region_plus_context`, using ±5 residue local sequence-context features.
