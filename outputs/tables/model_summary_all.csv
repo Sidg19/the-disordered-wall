@@ -1,0 +1,15 @@
+,,spearman,spearman,rmse,rmse,r2,r2,n,n
+,,mean,std,mean,std,mean,std,mean,std
+feature_set,subset,,,,,,,,
+mutation_only,IDR,0.1292,0.163,1.0425,0.1098,-0.1749,0.2314,2606.0,1785.0301
+mutation_only,all,0.2098,0.0272,1.043,0.0178,-0.0882,0.0373,9747.3333,84.9792
+mutation_only,ordered,0.2162,0.0295,1.0525,0.0198,-0.0894,0.0473,7421.0,1708.3945
+mutation_plus_region,IDR,0.0877,0.1417,1.058,0.0746,-0.2024,0.1407,2678.7143,1915.2126
+mutation_plus_region,all,0.2083,0.0391,1.04,0.0181,-0.0819,0.0374,9741.2,93.5131
+mutation_plus_region,ordered,0.2266,0.0328,1.0431,0.021,-0.0703,0.0495,7378.6,1906.5102
+mutation_plus_region_plus_context,IDR,0.1215,0.1742,0.9732,0.0781,-0.0727,0.1739,2358.3333,1627.0394
+mutation_plus_region_plus_context,all,0.2587,0.0353,0.9775,0.0115,0.0444,0.0226,9747.3333,84.9792
+mutation_plus_region_plus_context,ordered,0.2921,0.0303,0.9769,0.0168,0.0614,0.0369,7378.6,1906.5102
+mutation_plus_region_plus_context_plus_structure,IDR,0.1084,0.2067,1.0091,0.1097,-0.1324,0.2258,2362.6,1819.0478
+mutation_plus_region_plus_context_plus_structure,all,0.2959,0.0664,0.9618,0.0265,0.0745,0.0509,9741.2,93.5131
+mutation_plus_region_plus_context_plus_structure,ordered,0.3617,0.0365,0.9452,0.0259,0.1208,0.054,7378.6,1906.5102

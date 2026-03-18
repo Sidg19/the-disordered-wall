@@ -1,0 +1,5 @@
+,structure_available,structure_available,structure_available,plddt,plddt,plddt,ca_neighbors_10A,ca_neighbors_10A,ca_neighbors_10A,mean_knn_ca_dist_5,mean_knn_ca_dist_5,mean_knn_ca_dist_5
+,mean,median,count,mean,median,count,mean,median,count,mean,median,count
+region_type,,,,,,,,,,,,
+IDR,0.9938,1.0,11813,72.2998,73.53,11740,9.9394,9.0,11740,5.2884,5.1685,11740
+ordered,0.967,1.0,36893,90.0091,94.21,35675,15.9156,16.0,35675,4.8511,4.749,35675

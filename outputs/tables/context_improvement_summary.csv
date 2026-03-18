@@ -1,0 +1,6 @@
+,delta_spearman,delta_spearman,delta_rmse,delta_rmse,delta_r2,delta_r2
+,mean,std,mean,std,mean,std
+subset,,,,,,
+IDR,0.0334,0.0779,-0.0722,0.0335,0.1569,0.0668
+all,0.0481,0.0096,-0.0627,0.0078,0.1267,0.0169
+ordered,0.0654,0.0404,-0.0662,0.0164,0.1317,0.0341
