@@ -1,5 +1,7 @@
 # The Disordered Wall
 
+- By Siddhartha Gupta 
+
 ## Summary
 
 This project asks whether mutation effects behave differently in intrinsically disordered regions (IDRs) than in ordered protein regions, and whether the same predictive cues work equally well in both settings. I built a benchmark by intersecting ProteinGym deep mutational scanning (DMS) assays with DisProt disorder annotations, labeled each mutation as `IDR` or `ordered`, and compared both mutation-effect distributions and predictive model performance across region types.
