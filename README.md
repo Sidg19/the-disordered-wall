@@ -1,17 +1,27 @@
 # The Disordered Wall
 
 ## Summary
-This project asks whether mutation effects behave differently in intrinsically disordered regions (IDRs) versus ordered protein regions, and whether the same predictive cues work equally well in both settings. I built a benchmark by intersecting ProteinGym deep mutational scanning (DMS) assays with DisProt disorder annotations, labeled each mutation as IDR or ordered, and compared both mutation-effect distributions and predictive model performance across region types. In the final benchmark, IDR mutations were slightly more tolerated on average than ordered-region mutations, but predictive performance remained lower in IDRs. As a bonus extension, I added local sequence-context features around each mutation and found that these features substantially improved prediction beyond mutation identity and a coarse IDR/ordered label.
+
+This project asks whether mutation effects behave differently in intrinsically disordered regions (IDRs) than in ordered protein regions, and whether the same predictive cues work equally well in both settings. To study this, I built a benchmark by intersecting ProteinGym deep mutational scanning (DMS) assays with DisProt disorder annotations, labeling each mutation as either `IDR` or `ordered`, and comparing both mutation-effect distributions and predictive model performance across region types.
+
+In the final benchmark, mutations in IDRs were slightly more tolerated on average than mutations in ordered regions at the pooled dataset level, although this effect was heterogeneous across proteins. Predictive performance was consistently lower in IDRs than in ordered regions. As a bonus extension, I added local sequence-context features around each mutation and found that these features substantially improved mutation-effect prediction beyond mutation identity and a coarse IDR/ordered label.
+
+---
 
 ## Biological Problem and Motivation
-Intrinsically disordered regions are biologically important but harder to describe using standard structure-centric tools. Ordered domains are often analyzed through stable 3D structure, residue packing, and confidence metrics, but many IDRs do not adopt one fixed conformation. This raises two related questions:
+
+Intrinsically disordered regions are biologically important but harder to describe using standard structure-centric tools. Ordered domains are often analyzed in terms of stable 3D structure, residue packing, burial/exposure, and structure-confidence metrics, but many IDRs do not adopt one fixed conformation. That raises two related questions:
 
 1. Do mutation-effect scores follow different distributions in IDRs compared with ordered regions?
-2. Are mutation effects harder to model in IDRs, and if so, what kinds of features are still useful?
+2. Are mutation effects harder to model in IDRs, and if so, what kinds of features remain useful?
 
-I was interested in this question because my broader research interests sit at the interface of protein/RNA biology, disorder, and computational modeling. The project also connects to a bigger theme in protein ML: how far structure-based intuition transfers to flexible, disordered biology.
+I was interested in this question because my broader research interests sit at the interface of protein/RNA biology, disorder, and computational modeling. The project also connects to a larger theme in protein machine learning: how far structure-based intuition transfers to flexible, disordered biology.
 
-## Public dataset links
+Although the original route was partly motivated by structure-derived signals such as pLDDT, the final successful analysis ultimately focused on mutation-level, disorder-aware, and sequence-context features rather than structure-derived features.
+
+---
+
+## Public Dataset Links
 
 The raw benchmark files used in this project are public and can be downloaded from the official sources below.
 
@@ -22,41 +32,49 @@ The raw benchmark files used in this project are public and can be downloaded fr
 Files used from ProteinGym:
 - `DMS_substitutions.csv`
 - `DMS_ProteinGym_substitutions/`
-- `ProteinGym_AF2_structures/` *(downloaded during setup, but structure-derived features were not part of the final successful analysis)*
+- `ProteinGym_AF2_structures/` *(downloaded during setup, but not part of the final successful analysis)*
 
 ### DisProt
-- [DisProt annotated proteins download page](https://disprot.org/download)
+- [DisProt download page](https://disprot.org/download)
 - [DisProt homepage](https://disprot.org/)
 
 Files used from DisProt:
 - `DisProt_release_2025_12.tsv`
 
 ### Note
-Raw benchmark data are not committed to this repository to keep the repo lightweight and because the datasets are publicly available from the official sources above.
-### 2. DisProt
-I used DisProt annotated disorder regions to assign each mutation position to either an IDR or an ordered region.
+Raw benchmark data are not committed to this repository in order to keep the repo lightweight and because the datasets are already publicly available from the official sources above.
 
-### 3. Protein Structures / pLDDT
-I downloaded the ProteinGym AlphaFold structure set with the intention of incorporating structure-derived features such as pLDDT. **However, structure coverage did not populate successfully in the final benchmark, so the final reported analyses do not rely on structure-derived features**. I mention this explicitly because it was part of the original route idea, but it was not a successful component of the final analysis.
+More detailed setup instructions are provided in [`data_docs/DATA_SETUP.md`](data_docs/DATA_SETUP.md).
+
+---
 
 ## What Was Used in the Final Analysis
+
 After filtering and overlap construction, the final benchmark contained:
 
-- 34 ProteinGym assays
-- 32 proteins
-- 48,706 variants total
-- 11,813 IDR variants
-- 36,893 ordered variants
+- **34 ProteinGym assays**
+- **32 proteins**
+- **48,706 variants total**
+- **11,813 IDR variants**
+- **36,893 ordered variants**
 
-These variants came from the ProteinGym × DisProt intersection after UniProt identifier mapping, single-mutation parsing, sequence-position validation, and region labeling.
+These variants came from the ProteinGym × DisProt intersection after:
+- UniProt identifier mapping
+- single-mutation parsing
+- sequence-position validation
+- region labeling
+
+---
 
 ## Computational Approach
+
 ### Benchmark construction
-The pipeline does the following:
+
+The main pipeline does the following:
 
 1. Load ProteinGym assay metadata and DMS assay files.
-2. Map ProteinGym identifiers to UniProt accessions.
-3. Load DisProt region annotations.
+2. Map ProteinGym identifiers to UniProt accessions so they can be intersected with DisProt.
+3. Load DisProt disorder annotations.
 4. Intersect ProteinGym proteins with DisProt proteins.
 5. Parse single amino-acid substitutions (for example, `A25V`).
 6. Validate mutation positions against the assay target sequence.
@@ -64,7 +82,8 @@ The pipeline does the following:
 8. Standardize assay scores within each assay to create `DMS_score_z`.
 
 ### Feature engineering
-I first used a baseline set of mutation-centric features:
+
+The baseline mutation-level feature set included:
 
 - wild-type residue
 - mutant residue
@@ -76,31 +95,34 @@ I first used a baseline set of mutation-centric features:
 - simple residue class indicators
 
 I then added:
-
 - a coarse `region_type` feature (`IDR` vs `ordered`)
+- local disorder density
 
 For the bonus extension, I added local sequence-context features computed from a ±5 residue window around the mutation site, including:
 
 - local charged fraction
-- positive / negative fraction
-- hydrophobic fraction
-- polar fraction
-- aromatic fraction
+- local positive / negative fraction
+- local hydrophobic fraction
+- local polar fraction
+- local aromatic fraction
 - glycine/proline fraction
 - local net charge
 - local mean hydropathy
 - a simple low-complexity proxy
 
 ### Modeling workflow
+
 The predictive task was:
 
 **Predict assay-standardized mutation effect (`DMS_score_z`) from mutation/site features.**
 
-I used grouped cross-validation by protein (`GroupKFold`) so that evaluation was protein-aware rather than allowing within-protein leakage. The baseline models compared were:
+I used grouped cross-validation by protein (`GroupKFold`) so that evaluation was protein-aware rather than allowing within-protein leakage.
+
+The main models compared were:
 
 1. `mutation_only`
 2. `mutation_plus_region`
-3. `mutation_plus_region_plus_context` (bonus extension)
+3. `mutation_plus_region_plus_context` *(bonus extension)*
 
 Performance was evaluated using:
 
@@ -110,91 +132,111 @@ Performance was evaluated using:
 
 and was reported overall as well as separately for IDR and ordered subsets.
 
+The core regression model was a **RandomForestRegressor** inside a preprocessing pipeline with one-hot encoding for categorical features and standard preprocessing for numeric features.
+
+---
+
 ## Route Design and What Was Completed
+
 ### Planned route idea
-The original route asked whether the “handholds” that work on ordered protein structure, especially structure-derived confidence signals, become less useful in IDRs, and whether mutation-effect distributions differ in disordered regions.
+
+The original route asked whether the “handholds” that work on ordered protein structure — especially structure-derived confidence signals — become less useful in IDRs, and whether mutation-effect distributions differ in disordered regions.
 
 ### Completed successfully
+
 - Built a ProteinGym × DisProt benchmark
 - Mapped mutation positions to IDR vs ordered regions
-- Compared mutation-effect distributions in the two region types
+- Compared mutation-effect distributions across region types
 - Trained grouped cross-validated predictive baselines
 - Evaluated model performance separately for IDR and ordered mutations
 - Performed balanced subsampling and protein-level robustness analyses
 - Added a bonus extension using local sequence-context features
 
 ### Attempted but not completed successfully
+
 - Structure-derived feature integration (especially pLDDT / AlphaFold-derived features)
 
-This means the final project answers the main comparative and predictive questions, but does **not** support strong conclusions about structure-derived features in the final benchmark.
+The final project therefore answers the main comparative and predictive questions, but it does **not** support strong benchmark-wide conclusions about structure-derived features in the final reported model.
+
+---
 
 ## Key Results
+
 ### 1. Mutation-effect distributions differ between IDRs and ordered regions
+
 In the final intersected benchmark:
 
-- IDR mean `DMS_score_z` ≈ 0.031
-- ordered mean `DMS_score_z` ≈ -0.010
-- IDR median `DMS_score_z` ≈ 0.274
-- ordered median `DMS_score_z` ≈ 0.181
+- IDR mean `DMS_score_z` ≈ **0.031**
+- ordered mean `DMS_score_z` ≈ **-0.010**
+- IDR median `DMS_score_z` ≈ **0.274**
+- ordered median `DMS_score_z` ≈ **0.181**
 
-**This indicates that, on average, mutations in IDRs were slightly more tolerated than mutations in ordered regions.**
+This indicates that, on average, mutations in IDRs were **slightly more tolerated** than mutations in ordered regions in the pooled benchmark.
 
 ### 2. The pooled IDR-vs-ordered difference is robust to class imbalance
-I performed balanced subsampling because the benchmark contained many more ordered than IDR variants. The result remained positive:
 
-- balanced mean difference (`IDR - ordered`) ≈ 0.0409 ± 0.0078
-- 95% interval for balanced mean difference ≈ [0.0276, 0.0567]
-- balanced median difference ≈ 0.0941 ± 0.0084
-- 95% interval for balanced median difference ≈ [0.0831, 0.1108]
+Because the benchmark contains many more ordered than IDR variants, I performed balanced subsampling. The result remained positive:
 
-**So the shift toward more tolerated IDR mutations was not simply caused by having more ordered variants.**
+- balanced mean difference (`IDR - ordered`) ≈ **0.0409 ± 0.0078**
+- 95% interval for balanced mean difference ≈ **[0.0276, 0.0567]**
+- balanced median difference ≈ **0.0941 ± 0.0084**
+- 95% interval for balanced median difference ≈ **[0.0831, 0.1108]**
+
+This suggests the shift toward more tolerated IDR mutations is **not simply caused by the larger number of ordered variants**.
 
 ### 3. The protein-level effect is heterogeneous
+
 Among proteins with both region types represented:
 
-- 12 proteins had both IDR and ordered mutations
-- 7 showed positive `IDR - ordered` median differences
-- 5 showed negative differences
-- Wilcoxon paired p-value ≈ 0.733
+- **12 proteins** had both IDR and ordered mutations
+- **7** showed positive `IDR - ordered` median differences
+- **5** showed negative differences
+- Wilcoxon paired p-value ≈ **0.733**
 
 This suggests the pooled IDR effect is **not universal across proteins**. Some proteins show more tolerated IDR mutations, while others show the opposite.
 
 ### 4. Mutation-effect prediction is worse in IDRs than in ordered regions
+
 For the baseline predictive models, Spearman correlation was consistently lower in IDRs than in ordered regions.
 
 Approximate mean Spearman values:
 
-- `mutation_only`: IDR ≈ 0.122, ordered ≈ 0.221
-- `mutation_plus_region`: IDR ≈ 0.110, ordered ≈ 0.227
+- `mutation_only`: IDR ≈ **0.122**, ordered ≈ **0.221**
+- `mutation_plus_region`: IDR ≈ **0.110**, ordered ≈ **0.227**
 
-**This supports the idea that mutation effects are harder to rank/predict in IDRs than in ordered protein regions.**
+This supports the idea that mutation effects are **harder to rank/predict in IDRs** than in ordered protein regions.
 
 ### 5. A coarse IDR/ordered label alone adds very little
+
 Adding only the `region_type` label produced very little overall improvement compared with mutation-only features.
 
-**This suggests that a coarse “disordered vs ordered” label is too simple to capture the sequence determinants that matter for mutation effects.**
+This suggests that a coarse `IDR` / `ordered` label is too simple to capture the sequence determinants that matter for mutation effects.
 
 ### 6. Bonus extension: local sequence context substantially improves prediction
+
 I added a third model, `mutation_plus_region_plus_context`, using ±5 residue local sequence-context features.
 
 This improved mean Spearman substantially:
 
-- IDR: from ≈ 0.110 to ≈ 0.144
-- all variants: from ≈ 0.208 to ≈ 0.256
-- ordered: from ≈ 0.227 to ≈ 0.292
+- IDR: from ≈ **0.110** to ≈ **0.144**
+- all variants: from ≈ **0.208** to ≈ **0.256**
+- ordered: from ≈ **0.227** to ≈ **0.292**
 
 The improvement over `mutation_plus_region` was approximately:
 
-- IDR: +0.033
-- all: +0.048
-- ordered: +0.065
+- IDR: **+0.033**
+- all: **+0.048**
+- ordered: **+0.065**
 
 This bonus result suggests that **local sequence environment carries useful predictive information beyond mutation identity and a coarse region label**.
 
+---
+
 ## Interpretation
+
 The final picture is more nuanced than a simple “IDRs are different” claim.
 
-What the results support:
+### What the results support
 
 - IDR mutations are somewhat more tolerated on average in the pooled benchmark.
 - This pooled difference is robust to class imbalance.
@@ -202,34 +244,46 @@ What the results support:
 - A coarse IDR/ordered label is not enough to improve prediction much.
 - Local sequence context provides substantial additional signal.
 
-What the results do **not** support strongly:
+### What the results do **not** support strongly
 
 - that the IDR-vs-ordered effect is universal across proteins
-- that structure-derived features were successfully tested in the final benchmark
-- that sequence context helps IDRs more than ordered regions specifically
+- that structure-derived features were successfully benchmarked in the final analysis
+- that local sequence context helps IDRs more than ordered regions specifically
 
-In fact, the context bonus improved prediction in **both** region types, with a larger gain in ordered regions in this benchmark.
+In fact, the context bonus improved prediction in **both** region types, with an even larger gain in ordered regions in this benchmark.
 
-## Limitations
-- The benchmark overlap between ProteinGym and DisProt was modest.
-- Only 12 proteins had both IDR and ordered mutation subsets available for paired protein-level analysis.
-- Structure-derived features were attempted but did not populate successfully.
-- The final analysis focuses on single substitutions and does not incorporate indels or more complex mutational combinations.
-- The project uses a pooled benchmark and relatively simple models rather than protein-specific or deep sequence models.
+---
 
-## Next Steps
+## Limitations and Future Work
+
+A key limitation of the current workflow is that structure-derived features were not robustly incorporated into the final benchmark.
+
+Although AlphaFold-style PDB files were available, the mutation-level structure lookup step did not populate reliably in the final working notebook. One practical reason is that, after ProteinGym identifiers were normalized to UniProt accessions for the ProteinGym–DisProt overlap, many downloaded PDB files were still labeled using ProteinGym/entry-style identifiers (for example, `ACE2_HUMAN.pdb`) rather than the accession IDs used in the merged benchmark. This prevented reliable automatic matching between benchmark rows and structure files.
+
+More importantly, pLDDT by itself was not treated as a strong enough feature to justify rebuilding the final model around structure confidence. In this setting, pLDDT would likely behave mainly as a broad confidence/disorder marker, especially in IDRs, rather than as a rich mutation-effect descriptor. That made it less compelling than richer structure-derived features such as local contact count, neighborhood density, burial/exposure, or other geometric descriptors.
+
+For that reason, the final successful analysis focused on mutation descriptors, disorder annotations, and local sequence-context features, which produced clearer and more interpretable gains.
+
 If I extended the project further, I would prioritize:
 
-1. Fixing structure-file mapping so pLDDT and related confidence features can be tested directly.
-2. Expanding the sequence-context model with richer composition or motif-aware features.
-3. Running protein-level or assay-level models to better separate global trends from protein-specific effects.
-4. Testing whether the same conclusions hold under stricter external validation or additional DMS benchmarks.
+1. Repairing structure-file matching so mutation rows can be mapped reliably to available PDB files.
+2. Extracting richer structure-derived features from the available PDBs, such as local contact count, packing density, or approximate exposure, rather than relying on pLDDT alone.
+3. Expanding the sequence-context model with richer composition or motif-aware features.
+4. Running protein-level or assay-level models to better separate global trends from protein-specific effects.
+5. Testing whether the same conclusions hold under stricter external validation or additional DMS benchmarks.
+
+---
 
 ## Reproducibility / How to Run
+
 ### Main notebook
-Run the final notebook in Google Colab or Jupyter.
+
+Run the final notebook in Google Colab or Jupyter:
+
+- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_final.ipynb)
 
 ### Required inputs
+
 Place the following inputs where the notebook expects them:
 
 - ProteinGym DMS substitutions reference CSV
@@ -238,6 +292,7 @@ Place the following inputs where the notebook expects them:
 - optional ProteinGym AlphaFold structure folder
 
 ### Basic workflow
+
 1. Mount Google Drive (if using Colab).
 2. Set the input file paths in the configuration cell.
 3. Run the notebook sections in order:
@@ -251,6 +306,7 @@ Place the following inputs where the notebook expects them:
 4. Export figures/tables as needed.
 
 ### Main dependencies
+
 Typical dependencies used in the notebook:
 
 - Python 3
@@ -262,36 +318,31 @@ Typical dependencies used in the notebook:
 - biopython
 - requests
 
+See [`requirements.txt`](requirements.txt) and [`data_docs/DATA_SETUP.md`](data_docs/DATA_SETUP.md) for more details.
+
+---
+
 ## Repository Contents
+
 Recommended repository structure:
 
 ```text
 .
 ├── README.md
+├── ROUTE_PROMPT.md
+├── requirements.txt
 ├── notebooks/
 │   └── disordered_wall_pipeline_final.ipynb
-├── figures/
-│   ├── mutation_effect_distributions.png
-│   ├── model_performance_by_region.png
-│   ├── balanced_subsampling.png
-│   └── bonus_context_model.png
-├── results/
-│   ├── model_summary.csv
-│   ├── protein_level_summary.csv
-│   └── bonus_context_summary.csv
-└── data/
-    └── README_data_notes.md
-```
-
-## Key Figures / Artifacts to Link
-Link these clearly from the repo:
-
-- final notebook
-- key figures used in the writeup
-- model summary tables
-- any exported CSV results
-
-## Route Prompt
-**The Disordered Wall**
-
-*A route that ventures off the well-mapped face of ordered protein domains and into the loose, unpredictable terrain of intrinsically disordered regions. The climber asks whether the handholds that work on solid rock become useless on the crumbling IDR face — and whether mutation-effect scores follow different distributions in disorder.*
+├── outputs/
+│   ├── figures/
+│   │   ├── idr_vs_ordered_dms_score_distribution.png
+│   │   ├── model_performance_by_region.png
+│   │   ├── balanced_subsampling.png
+│   │   ├── per_protein_median_difference.png
+│   │   └── model_comparison_with_context_by_region.png
+│   └── tables/
+│       ├── region_summary.csv
+│       ├── cv_summary.csv
+│       └── cv_results_by_fold.csv
+└── data_docs/
+    └── DATA_SETUP.md
