@@ -280,7 +280,7 @@ If I extended the project further, I would prioritize:
 
 Run the final notebook in Google Colab or Jupyter:
 
-- [`notebooks/disordered_wall_pipeline_clean.ipynb`](notebooks/disordered_wall_pipeline_clean.ipynb)
+- [`notebooks/disordered_wall_pipeline_cleaned.ipynb`](notebooks/disordered_wall_pipeline_cleaned.ipynb)
 
 ### Required inputs
 
