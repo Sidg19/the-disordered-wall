@@ -280,7 +280,7 @@ If I extended the project further, I would prioritize:
 
 Run the final notebook in Google Colab or Jupyter:
 
-- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_clean.ipynb)
+- [`notebooks/disordered_wall_pipeline_clean.ipynb`](notebooks/disordered_wall_pipeline_clean.ipynb)
 
 ### Required inputs
 
@@ -321,28 +321,3 @@ Typical dependencies used in the notebook:
 See [`requirements.txt`](requirements.txt) and [`data_docs/DATA_SETUP.md`](data_docs/DATA_SETUP.md) for more details.
 
 ---
-
-## Repository Contents
-
-Recommended repository structure:
-
-```text
-.
-├── README.md
-├── ROUTE_PROMPT.md
-├── requirements.txt
-├── notebooks/
-│   └── disordered_wall_pipeline_final.ipynb
-├── outputs/
-│   ├── figures/
-│   │   ├── idr_vs_ordered_dms_score_distribution.png
-│   │   ├── model_performance_by_region.png
-│   │   ├── balanced_subsampling.png
-│   │   ├── per_protein_median_difference.png
-│   │   └── model_comparison_with_context_by_region.png
-│   └── tables/
-│       ├── region_summary.csv
-│       ├── cv_summary.csv
-│       └── cv_results_by_fold.csv
-└── data_docs/
-    └── DATA_SETUP.md
