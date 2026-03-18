@@ -162,12 +162,6 @@ The original route asked whether the “handholds” that work on ordered protei
 - Added a bonus extension using local sequence-context features
 - Added a lightweight structure-based extension using pLDDT and simple local geometry features
 
-### Not included as part of the final scope
-
-- mutant-specific AlphaFold/ColabFold structure generation
-- richer geometric feature extraction such as burial/exposure or more advanced contact-based descriptors
-- a full mutation-to-structure remapping pipeline beyond the lightweight implementation used here
-
 ---
 
 ## Key Results
@@ -270,12 +264,6 @@ The final picture is more nuanced than a simple “IDRs are different” claim.
 - Local sequence context provides substantial additional signal.
 - Lightweight structure-derived features provide strong additional signal in ordered regions, but not in IDRs.
 
-### What the results do **not** support strongly
-
-- that the IDR-vs-ordered effect is universal across proteins
-- that simple structure-derived features improve IDR prediction
-- that pLDDT alone is a sufficient structure-based descriptor of mutation effect
-
 In this benchmark, the strongest structure-related conclusion is not that structure features are broadly useful everywhere, but that **their utility appears concentrated in ordered regions**.
 
 ---
@@ -302,7 +290,7 @@ If I extended the project further, I would prioritize:
 
 Run the final notebook in Google Colab or Jupyter:
 
-- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_final.ipynb)
+- [`notebooks/disordered_wall_final.ipynb`](notebooks/disordered_wall_final.ipynb)
 
 ### Required inputs
 
