@@ -258,9 +258,9 @@ In fact, the context bonus improved prediction in **both** region types, with an
 
 A key limitation of the current workflow is that structure-derived features were not robustly incorporated into the final benchmark.
 
-Although AlphaFold-style PDB files were available, the mutation-level structure lookup step did not populate reliably in the final working notebook. One practical reason is that, after ProteinGym identifiers were normalized to UniProt accessions for the ProteinGym–DisProt overlap, many downloaded PDB files were still labeled using ProteinGym/entry-style identifiers (for example, `ACE2_HUMAN.pdb`) rather than the accession IDs used in the merged benchmark. This prevented reliable automatic matching between benchmark rows and structure files.
+Although AlphaFold-style PDB files were available, structure-derived features were not included in the final benchmark because doing so would have required a separate and carefully validated mutation-to-structure mapping pipeline. This was not just a matter of finding the right file names: it would also have required residue-level alignment between ProteinGym assay positions and structure residue numbering, handling partial or split structures, verifying wild-type residue identity, and then post-processing coordinates to extract meaningful geometric features. Since those steps were substantial and a naive implementation risked introducing silent mapping errors, the final project focused on mutation-level, disorder-aware, and local sequence-context features instead.
 
-More importantly, pLDDT by itself was not treated as a strong enough feature to justify rebuilding the final model around structure confidence. In this setting, pLDDT would likely behave mainly as a broad confidence/disorder marker, especially in IDRs, rather than as a rich mutation-effect descriptor. That made it less compelling than richer structure-derived features such as local contact count, neighborhood density, burial/exposure, or other geometric descriptors.
+More importantly, pLDDT alone was not treated as a strong enough feature to justify rebuilding the final model around structure confidence. AlphaFold is already expected to assign low confidence to intrinsically disordered regions, so in this benchmark pLDDT would mainly behave as a coarse disorder/confidence marker rather than a rich mutation-effect descriptor. In other words, it would largely restate that a region is poorly structured, without providing much additional mutation-level information. 
 
 For that reason, the final successful analysis focused on mutation descriptors, disorder annotations, and local sequence-context features, which produced clearer and more interpretable gains.
 
@@ -280,7 +280,7 @@ If I extended the project further, I would prioritize:
 
 Run the final notebook in Google Colab or Jupyter:
 
-- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_final.ipynb)
+- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_clean.ipynb)
 
 ### Required inputs
 
