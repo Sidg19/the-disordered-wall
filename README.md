@@ -2,22 +2,20 @@
 
 ## Summary
 
-This project asks whether mutation effects behave differently in intrinsically disordered regions (IDRs) than in ordered protein regions, and whether the same predictive cues work equally well in both settings. To study this, I built a benchmark by intersecting ProteinGym deep mutational scanning (DMS) assays with DisProt disorder annotations, labeling each mutation as either `IDR` or `ordered`, and comparing both mutation-effect distributions and predictive model performance across region types.
+This project asks whether mutation effects behave differently in intrinsically disordered regions (IDRs) than in ordered protein regions, and whether the same predictive cues work equally well in both settings. I built a benchmark by intersecting ProteinGym deep mutational scanning (DMS) assays with DisProt disorder annotations, labeled each mutation as `IDR` or `ordered`, and compared both mutation-effect distributions and predictive model performance across region types.
 
-In the final benchmark, mutations in IDRs were slightly more tolerated on average than mutations in ordered regions at the pooled dataset level, although this effect was heterogeneous across proteins. Predictive performance was consistently lower in IDRs than in ordered regions. As a bonus extension, I added local sequence-context features around each mutation and found that these features substantially improved mutation-effect prediction beyond mutation identity and a coarse IDR/ordered label.
+In the final benchmark, IDR mutations were slightly more tolerated on average than ordered-region mutations in the pooled dataset, although this effect was heterogeneous across proteins. Predictive performance was consistently lower in IDRs than in ordered regions. As a bonus extension, I added local sequence-context features around each mutation and found that these substantially improved prediction beyond mutation identity and a coarse IDR/ordered label. I also added a lightweight structure-based extension using AlphaFold/PDB-derived features (`plddt`, local Cα neighbor count, and local nearest-neighbor distance), and found that these features substantially improved prediction overall and in ordered regions, but not in IDRs.
 
 ---
 
 ## Biological Problem and Motivation
 
-Intrinsically disordered regions are biologically important but harder to describe using standard structure-centric tools. Ordered domains are often analyzed in terms of stable 3D structure, residue packing, burial/exposure, and structure-confidence metrics, but many IDRs do not adopt one fixed conformation. That raises two related questions:
+Intrinsically disordered regions are biologically important but harder to describe using standard structure-centric tools. Ordered domains are often analyzed using stable 3D structure, residue packing, burial/exposure, and confidence metrics, but many IDRs do not adopt one fixed conformation. This raises two related questions:
 
 1. Do mutation-effect scores follow different distributions in IDRs compared with ordered regions?
 2. Are mutation effects harder to model in IDRs, and if so, what kinds of features remain useful?
 
-I was interested in this question because my broader research interests sit at the interface of protein/RNA biology, disorder, and computational modeling. The project also connects to a larger theme in protein machine learning: how far structure-based intuition transfers to flexible, disordered biology.
-
-Although the original route was partly motivated by structure-derived signals such as pLDDT, the final successful analysis ultimately focused on mutation-level, disorder-aware, and sequence-context features rather than structure-derived features.
+I was interested in this problem because my broader research interests sit at the interface of protein/RNA biology, disorder, and computational modeling. The project also connects to a larger theme in protein machine learning: how far structure-based intuition transfers to flexible, disordered biology.
 
 ---
 
@@ -32,7 +30,7 @@ The raw benchmark files used in this project are public and can be downloaded fr
 Files used from ProteinGym:
 - `DMS_substitutions.csv`
 - `DMS_ProteinGym_substitutions/`
-- `ProteinGym_AF2_structures/` *(downloaded during setup, but not part of the final successful analysis)*
+- `ProteinGym_AF2_structures/`
 
 ### DisProt
 - [DisProt download page](https://disprot.org/download)
@@ -42,7 +40,7 @@ Files used from DisProt:
 - `DisProt_release_2025_12.tsv`
 
 ### Note
-Raw benchmark data are not committed to this repository in order to keep the repo lightweight and because the datasets are already publicly available from the official sources above.
+Raw benchmark data are not committed to this repository in order to keep the repo lightweight and because the datasets are publicly available from the official sources above.
 
 More detailed setup instructions are provided in [`data_docs/DATA_SETUP.md`](data_docs/DATA_SETUP.md).
 
@@ -110,6 +108,16 @@ For the bonus extension, I added local sequence-context features computed from a
 - local mean hydropathy
 - a simple low-complexity proxy
 
+### Lightweight structure-based extension
+
+I also added a minimal structure-derived feature set using the downloaded ProteinGym AlphaFold/PDB files. For mutation rows that could be mapped to structure residues, I extracted:
+
+- `plddt` (from the PDB B-factor field)
+- `ca_neighbors_10A` (number of nearby Cα atoms within 10 Å)
+- `mean_knn_ca_dist_5` (mean distance to the five nearest Cα neighbors)
+
+These features were used as a lightweight structure-based comparison rather than a full structural bioinformatics pipeline.
+
 ### Modeling workflow
 
 The predictive task was:
@@ -122,7 +130,8 @@ The main models compared were:
 
 1. `mutation_only`
 2. `mutation_plus_region`
-3. `mutation_plus_region_plus_context` *(bonus extension)*
+3. `mutation_plus_region_plus_context`
+4. `mutation_plus_region_plus_context_plus_structure`
 
 Performance was evaluated using:
 
@@ -151,12 +160,13 @@ The original route asked whether the “handholds” that work on ordered protei
 - Evaluated model performance separately for IDR and ordered mutations
 - Performed balanced subsampling and protein-level robustness analyses
 - Added a bonus extension using local sequence-context features
+- Added a lightweight structure-based extension using pLDDT and simple local geometry features
 
-### Attempted but not completed successfully
+### Not included as part of the final scope
 
-- Structure-derived feature integration (especially pLDDT / AlphaFold-derived features)
-
-The final project therefore answers the main comparative and predictive questions, but it does **not** support strong benchmark-wide conclusions about structure-derived features in the final reported model.
+- mutant-specific AlphaFold/ColabFold structure generation
+- richer geometric feature extraction such as burial/exposure or more advanced contact-based descriptors
+- a full mutation-to-structure remapping pipeline beyond the lightweight implementation used here
 
 ---
 
@@ -193,7 +203,7 @@ Among proteins with both region types represented:
 - **5** showed negative differences
 - Wilcoxon paired p-value ≈ **0.733**
 
-This suggests the pooled IDR effect is **not universal across proteins**. Some proteins show more tolerated IDR mutations, while others show the opposite.
+This suggests the pooled IDR effect is **not universal across proteins**.
 
 ### 4. Mutation-effect prediction is worse in IDRs than in ordered regions
 
@@ -222,13 +232,28 @@ This improved mean Spearman substantially:
 - all variants: from ≈ **0.208** to ≈ **0.256**
 - ordered: from ≈ **0.227** to ≈ **0.292**
 
-The improvement over `mutation_plus_region` was approximately:
+This result suggests that **local sequence environment carries useful predictive information beyond mutation identity and a coarse region label**.
 
-- IDR: **+0.033**
-- all: **+0.048**
-- ordered: **+0.065**
+### 7. Lightweight structure-derived features help ordered regions, but not IDRs
 
-This bonus result suggests that **local sequence environment carries useful predictive information beyond mutation identity and a coarse region label**.
+The structure-based extension used three simple features with high benchmark coverage:
+
+- `plddt`
+- `ca_neighbors_10A`
+- `mean_knn_ca_dist_5`
+
+These features showed clear region-level differences:
+- IDRs had lower mean pLDDT than ordered regions
+- IDRs had fewer local Cα neighbors
+- IDRs had larger mean nearest-neighbor Cα distances
+
+When added on top of the context model:
+
+- IDR Spearman changed from ≈ **0.144** to ≈ **0.108**
+- overall Spearman changed from ≈ **0.256** to ≈ **0.296**
+- ordered Spearman changed from ≈ **0.292** to ≈ **0.362**
+
+This suggests that **simple structure-derived cues are strongly informative in ordered regions, but do not improve IDR prediction**.
 
 ---
 
@@ -243,34 +268,31 @@ The final picture is more nuanced than a simple “IDRs are different” claim.
 - Mutation-effect prediction is harder in IDRs than in ordered regions.
 - A coarse IDR/ordered label is not enough to improve prediction much.
 - Local sequence context provides substantial additional signal.
+- Lightweight structure-derived features provide strong additional signal in ordered regions, but not in IDRs.
 
 ### What the results do **not** support strongly
 
 - that the IDR-vs-ordered effect is universal across proteins
-- that structure-derived features were successfully benchmarked in the final analysis
-- that local sequence context helps IDRs more than ordered regions specifically
+- that simple structure-derived features improve IDR prediction
+- that pLDDT alone is a sufficient structure-based descriptor of mutation effect
 
-In fact, the context bonus improved prediction in **both** region types, with an even larger gain in ordered regions in this benchmark.
+In this benchmark, the strongest structure-related conclusion is not that structure features are broadly useful everywhere, but that **their utility appears concentrated in ordered regions**.
 
 ---
 
 ## Limitations and Future Work
 
-A key limitation of the current workflow is that structure-derived features were not robustly incorporated into the final benchmark.
+The final structure-based extension was intentionally lightweight. It tested a small set of simple AlphaFold/PDB-derived features (`plddt`, local Cα neighbor count, and nearest-neighbor Cα distance) rather than a full structure-based modeling pipeline.
 
-Although AlphaFold-style PDB files were available, structure-derived features were not included in the final benchmark because doing so would have required a separate and carefully validated mutation-to-structure mapping pipeline. This was not just a matter of finding the right file names: it would also have required residue-level alignment between ProteinGym assay positions and structure residue numbering, handling partial or split structures, verifying wild-type residue identity, and then post-processing coordinates to extract meaningful geometric features. Since those steps were substantial and a naive implementation risked introducing silent mapping errors, the final project focused on mutation-level, disorder-aware, and local sequence-context features instead.
-
-More importantly, pLDDT alone was not treated as a strong enough feature to justify rebuilding the final model around structure confidence. AlphaFold is already expected to assign low confidence to intrinsically disordered regions, so in this benchmark pLDDT would mainly behave as a coarse disorder/confidence marker rather than a rich mutation-effect descriptor. In other words, it would largely restate that a region is poorly structured, without providing much additional mutation-level information. 
-
-For that reason, the final successful analysis focused on mutation descriptors, disorder annotations, and local sequence-context features, which produced clearer and more interpretable gains.
+More importantly, pLDDT alone was not treated as a strong enough feature to justify rebuilding the final model around AlphaFold confidence. In this setting, low pLDDT in IDRs is not a surprising biological signal so much as an expected property of the prediction framework: pLDDT often behaves mainly as a broad confidence/disorder marker rather than a rich mutation-effect descriptor. That made it less informative than richer structural descriptors based on local geometry.
 
 If I extended the project further, I would prioritize:
 
-1. Repairing structure-file matching so mutation rows can be mapped reliably to available PDB files.
-2. Extracting richer structure-derived features from the available PDBs, such as local contact count, packing density, or approximate exposure, rather than relying on pLDDT alone.
+1. Expanding the structure-based feature set with richer geometric descriptors such as burial/exposure or more detailed local contact structure.
+2. Testing whether structure-derived features continue to help mainly in ordered regions under stricter validation.
 3. Expanding the sequence-context model with richer composition or motif-aware features.
 4. Running protein-level or assay-level models to better separate global trends from protein-specific effects.
-5. Testing whether the same conclusions hold under stricter external validation or additional DMS benchmarks.
+5. Testing whether the same conclusions hold under additional DMS benchmarks.
 
 ---
 
@@ -280,7 +302,7 @@ If I extended the project further, I would prioritize:
 
 Run the final notebook in Google Colab or Jupyter:
 
-- [`notebooks/disordered_wall_pipeline_cleaned.ipynb`](notebooks/disordered_wall_pipeline_cleaned.ipynb)
+- [`notebooks/disordered_wall_pipeline_final.ipynb`](notebooks/disordered_wall_pipeline_final.ipynb)
 
 ### Required inputs
 
@@ -289,7 +311,7 @@ Place the following inputs where the notebook expects them:
 - ProteinGym DMS substitutions reference CSV
 - ProteinGym DMS assay CSV folder
 - DisProt regions TSV
-- optional ProteinGym AlphaFold structure folder
+- ProteinGym AlphaFold structure folder
 
 ### Basic workflow
 
@@ -300,9 +322,10 @@ Place the following inputs where the notebook expects them:
    - data loading
    - ProteinGym × DisProt intersection
    - region labeling and feature engineering
-   - modeling
+   - baseline modeling
    - robustness analyses
    - bonus sequence-context extension
+   - lightweight structure-based extension
 4. Export figures/tables as needed.
 
 ### Main dependencies
