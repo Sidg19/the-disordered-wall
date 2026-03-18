@@ -235,6 +235,7 @@ The structure-based extension used three simple features with high benchmark cov
 - `plddt`
 - `ca_neighbors_10A`
 - `mean_knn_ca_dist_5`
+- Structure-feature coverage: 47,415 / 48,706 variants
 
 These features showed clear region-level differences:
 - IDRs had lower mean pLDDT than ordered regions
